@@ -18,7 +18,7 @@ sigma_v = 160000/constants.c #m/s/c
 solarV = 250000 #m/s
 testRange = 150  # Radius of the modelling range (~75FWHM of the DM line)
 anchorNo = 5  #No. of anchor points in cubic spline
-step = 215 #3  #scanning the mass range in the given step (~FWHM of DM line)
+step = 15 #3  #scanning the mass range in the given step (~FWHM of DM line)
 maskRange = 1   #radius of the mask (in index)
 dataNo = 2  #No. of simulated data sets
 
@@ -220,7 +220,7 @@ class continuumFitting:  #gammaArr has to be monotonically increasing
         gammaBd = extractBound(gammaArr,chi2,Null=False)
         likelihood = lambda beta : self.lnlike_continuum(gammaBd, spectrum_eff, beta, wvl, flux, error, mask=maskCondition)
         minLike = optimize.minimize(likelihood,initial)
-        modelFit = np.transpose(np.array([self.fluxModel(wvl,gammaArr[min_i],spectrum_eff,minBeta[min_i,:]),self.fluxModel(wvl,gammaBd,spectrum_eff,minLike.x),self.fluxModel(wvl,0,spectrum_eff,minBeta[0,:])))
+        modelFit = np.transpose(np.array([self.fluxModel(wvl,gammaArr[min_i],spectrum_eff,minBeta[min_i,:]),self.fluxModel(wvl,gammaBd,spectrum_eff,minLike.x),self.fluxModel(wvl,0,spectrum_eff,minBeta[0,:])]))
         return chi2, gammaBd, modelFit, minBeta, maskCondition
 
     def simulateData(self,flux_model,error):
@@ -230,11 +230,11 @@ class continuumFitting:  #gammaArr has to be monotonically increasing
     def sensitivityBand(self,wvl,error,flux_model,gammaArr,spectrum_eff):  #if greater than 5sig=> besfit
         simFlux = self.simulateData(flux_model,error)
         simChi2 = np.zeros((dataNo,len(gammaArr)))
-        simFit = np.zeros((dataNo,testRange*2,2))
+        simFit = np.zeros((dataNo,testRange*2,3))
         simBeta = np.zeros((dataNo,len(gammaArr),anchorNo))
         gammaBound = np.zeros(dataNo)
         for i in range(dataNo):
-            simChi2[i,:], gammaBound[i], simFit[i,:,:], simBeta[i,:,:],_ = self.contFitting(gammaArr, spectrum_eff, wvl, simFlux[i,:], error)
+            simChi2[i,:], gammaBound[i], simFit[i,:,:],_,_ = self.contFitting(gammaArr, spectrum_eff, wvl, simFlux[i,:], error)
         gammaBand = np.array([np.mean(gammaBound),np.std(gammaBound)])
         return gammaBand, simFlux, simFit, simChi2
         
@@ -244,11 +244,11 @@ class continuumFitting:  #gammaArr has to be monotonically increasing
         chi2 = np.zeros((self.test_len,len(gammaArr)))  
         gammaBd = np.zeros(self.test_len)
         gammaBand = np.zeros((self.test_len,2))
-        self.modelFit = np.zeros((self.test_len,testRange*2,2))
+        self.modelFit = np.zeros((self.test_len,testRange*2,3))
         self.beta = np.zeros((self.test_len,len(gammaArr),5))
         self.mask = np.zeros((self.test_len,testRange*2))
         self.simData = np.zeros((self.test_len,dataNo,2*testRange))
-        self.simFit = np.zeros((self.test_len,dataNo,2*testRange,2))
+        self.simFit = np.zeros((self.test_len,dataNo,2*testRange,3))
         self.simChi2 = np.zeros((self.test_len,dataNo,len(gammaArr)))
 
         #########Computation##########

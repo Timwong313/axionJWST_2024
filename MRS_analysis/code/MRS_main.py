@@ -1,5 +1,6 @@
 #####Package#####
 import numpy as np
+import os
 import MRS_func as f
 
 #####Input#####
@@ -13,7 +14,7 @@ gammaTest3_cont = np.append(0,np.logspace(np.log10(3e-27),-24),120)
 gammaTest4_cont = np.append(0,np.logspace(-26,-23,120))
 
 #####Data#####
-dataDir = '../analysis_data/result_3(1spec)'
+dataDir = '../analysis_data/result_5(5specTest)'
 stkData = np.load(dataDir+'/stkData.npz')
 metaData = np.load(dataDir+'/metaData.npz')
 wvl_ch1, flux_ch1, err_ch1 = stkData['ch1']
@@ -46,10 +47,10 @@ d_lmd_ch2 = f.FWHMestim(S_spec_ch2,M_spec_ch2,L_spec_ch2)  #um
 d_lmd_ch3 = f.FWHMestim(S_spec_ch3,M_spec_ch3,L_spec_ch3)  #um
 d_lmd_ch4 = f.FWHMestim(S_spec_ch4,M_spec_ch4,L_spec_ch4)  #um
 LM = f.line_model(latArr,longArr)  #Initialize the line_model class
-spectrum1_eff = LM.effSpectrum(wvl_ch1_t,exptArr_ch1,d_lmd_ch1)
-spectrum2_eff = LM.effSpectrum(wvl_ch2_t,exptArr_ch2,d_lmd_ch2)
-spectrum3_eff = LM.effSpectrum(wvl_ch3_t,exptArr_ch3,d_lmd_ch3)
-spectrum4_eff = LM.effSpectrum(wvl_ch4_t,exptArr_ch4,d_lmd_ch4)
+spectrum1_eff = LM.effSpectrum(wvl_ch1,exptArr_ch1,d_lmd_ch1)
+spectrum2_eff = LM.effSpectrum(wvl_ch2,exptArr_ch2,d_lmd_ch2)
+spectrum3_eff = LM.effSpectrum(wvl_ch3,exptArr_ch3,d_lmd_ch3)
+spectrum4_eff = LM.effSpectrum(wvl_ch4,exptArr_ch4,d_lmd_ch4)
 
 #####ConservConstraint#####
 consvChi2_ch1, consvGammaBd_ch1, wvl_bd_ch1 = f.chi2_conservative(wvl_ch1,flux_ch1,err_ch1,gammaTest1_consv,spectrum1_eff)
