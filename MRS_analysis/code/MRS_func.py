@@ -18,7 +18,7 @@ sigma_v = 160000/constants.c #m/s/c
 solarV = 250000 #m/s
 testRange = 150  # Radius of the modelling range (~75FWHM of the DM line)
 anchorNo = 5  #No. of anchor points in cubic spline
-step = 15 #3  #scanning the mass range in the given step (~FWHM of DM line)
+step = 815 #3  #scanning the mass range in the given step (~FWHM of DM line)
 maskRange = 1   #radius of the mask (in index)
 dataNo = 2  #No. of simulated data sets
 
@@ -236,7 +236,7 @@ class continuumFitting:  #gammaArr has to be monotonically increasing
         for i in range(dataNo):
             simChi2[i,:], gammaBound[i], simFit[i,:,:],_,_ = self.contFitting(gammaArr, spectrum_eff, wvl, simFlux[i,:], error)
         gammaBand = np.array([np.mean(gammaBound),np.std(gammaBound)])
-        return gammaBand, simFlux, simFit, simChi2
+        return gammaBand, gammaBound, simFlux, simFit, simChi2
         
     def constraint_cont(self,gammaArr):
         print('Continuum fitting starts...')
@@ -250,13 +250,14 @@ class continuumFitting:  #gammaArr has to be monotonically increasing
         self.simData = np.zeros((self.test_len,dataNo,2*testRange))
         self.simFit = np.zeros((self.test_len,dataNo,2*testRange,3))
         self.simChi2 = np.zeros((self.test_len,dataNo,len(gammaArr)))
+        self.simGammaBd = np.zeros((self.test_len,dataNo))
 
         #########Computation##########
         for i in range(self.test_len):
             lmd0 = self.wvl_bd[i]
             wvlCut, fluxCut, errorCut, specCut = model_range(step*i,self.wvl,self.flux,self.error,self.spec)
             chi2[i,:], gammaBd[i], self.modelFit[i,:,:], self.beta[i,:,:], self.mask[i,:] = self.contFitting(gammaArr, specCut, wvlCut, fluxCut, errorCut)
-            gammaBand[i,:], self.simData[i,:,:], self.simFit[i,:,:,:], self.simChi2[i,:,:] = self.sensitivityBand(wvlCut,errorCut,self.modelFit[i,:,0],gammaArr,specCut)
+            gammaBand[i,:], self.simGammaBd[i,:], self.simData[i,:,:], self.simFit[i,:,:,:], self.simChi2[i,:,:] = self.sensitivityBand(wvlCut,errorCut,self.modelFit[i,:,0],gammaArr,specCut)
         N = detection_signif(chi2)
         ###############################
 

@@ -104,3 +104,4 @@ np.savez(resultDir+'/gammaBand.npz',ch1=gammaBand_ch1,ch2=gammaBand_ch2,ch3=gamm
 np.savez(resultDir+'/simData.npz',ch1=fc1.simData,ch2=fc2.simData,ch3=fc3.simData,ch4=fc4.simData)
 np.savez(resultDir+'/simFit.npz',ch1=fc1.simFit,ch2=fc2.simFit,ch3=fc3.simFit,ch4=fc4.simFit)
 np.savez(resultDir+'/simChi2.npz',ch1=fc1.simChi2,ch2=fc2.simChi2,ch3=fc3.simChi2,ch4=fc4.simChi2)
+np.savez(resultDir+'/simGammaBd.npz',ch1=fc1.simGammaBd,ch2=fc2.simGammaBd,ch3=fc3.simGammaBd,ch4=fc4.simGammaBd)
