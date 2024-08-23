@@ -123,7 +123,7 @@ def model_range(i,wvl,flux,error,spectrum):
 
     return wvlCut,fluxCut,errorCut,specCut
 
-def extractBound(gammaArr,chi2,Null,c=4):  
+def extractBound(gammaArr,chi2,Null,c=2.71):  
     #Null=True: checking chi2-0
     #Null=False: checking chi2-min(chi2)
     if (chi2.ndim==1):
@@ -235,7 +235,10 @@ class continuumFitting:  #gammaArr has to be monotonically increasing
         gammaBound = np.zeros(dataNo)
         for i in range(dataNo):
             simChi2[i,:], gammaBound[i], simFit[i,:,:],_,_ = self.contFitting(gammaArr, spectrum_eff, wvl, simFlux[i,:], error)
-        gammaBand = np.array([np.mean(gammaBound),np.std(gammaBound)])
+        #gammaBand = np.array([np.mean(gammaBound),np.std(gammaBound)])
+        band68 = np.array([np.percentile(gammaBound,84),np.percentile(gammaBound,16)])
+        band95 = np.array([np.percentile(gammaBound,97.5),np.percentile(gammaBound,2.5)])
+        gammaBand = np.array([band68,band95])
         return gammaBand, gammaBound, simFlux, simFit, simChi2
         
     def constraint_cont(self,gammaArr):
@@ -243,7 +246,7 @@ class continuumFitting:  #gammaArr has to be monotonically increasing
         start = time.time()
         chi2 = np.zeros((self.test_len,len(gammaArr)))  
         gammaBd = np.zeros(self.test_len)
-        gammaBand = np.zeros((self.test_len,2))
+        gammaBand = np.zeros((self.test_len,2,2))
         self.modelFit = np.zeros((self.test_len,testRange*2,3))
         self.beta = np.zeros((self.test_len,len(gammaArr),5))
         self.mask = np.zeros((self.test_len,testRange*2))
