@@ -257,15 +257,20 @@ class continuumFitting:  #gammaArr has to be monotonically increasing
 
         #########Computation##########
         for i in range(self.test_len):
-            lmd0 = self.wvl_bd[i]
+            if (i==0):
+                stimeEstim = time.time()
+            #lmd0 = self.wvl_bd[i]
             wvlCut, fluxCut, errorCut, specCut = model_range(step*i,self.wvl,self.flux,self.error,self.spec)
             chi2[i,:], gammaBd[i], self.modelFit[i,:,:], self.beta[i,:,:], self.mask[i,:] = self.contFitting(gammaArr, specCut, wvlCut, fluxCut, errorCut)
             gammaBand[i,:], self.simGammaBd[i,:], self.simData[i,:,:], self.simFit[i,:,:,:], self.simChi2[i,:,:] = self.sensitivityBand(wvlCut,errorCut,self.modelFit[i,:,0],gammaArr,specCut)
+            if (i==0):
+                etimeEstim = time.time()
+                print('Estimated computational time:', (etimeEstim-stimeEstim)*self.test_len/3600, ' [hrs]')
         N = detection_signif(chi2)
         ###############################
 
         end = time.time()
-        print('Duration: ', (end - start)/60, ' [min]')
+        print('Duration: ', (end - start)/3600, ' [hrs]')
         return chi2, gammaBd, gammaBand, N 
 
     # def bestFit(self,lmd0,gammaArr,chi2,wvl,flux,error):
