@@ -7,6 +7,7 @@ from scipy import integrate
 import numpy as np
 import math
 import time
+import sys
 
 ##########Parameters##########
 J_to_GeV = 6.242  #1e9 
@@ -266,6 +267,7 @@ class continuumFitting:  #gammaArr has to be monotonically increasing
             if (i==0):
                 etimeEstim = time.time()
                 print('Estimated computational time:', (etimeEstim-stimeEstim)*self.test_len/3600, ' [hrs]')
+                sys.stdout.flush()
         N = detection_signif(chi2)
         ###############################
 
