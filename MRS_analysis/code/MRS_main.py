@@ -89,7 +89,11 @@ contResult_ch3 = np.array([fc3.wvl_bd,contGammaBd_ch3,contCouplingBd_ch3, detect
 contResult_ch4 = np.array([fc4.wvl_bd,contGammaBd_ch4,contCouplingBd_ch4, detectSig_ch4])
 
 #####SaveResults#####
-resultDir = dataDir+'/result'
+nameDir = dataDir+'/result'
+i = 1
+while os.path.isdir(nameDir+str(i)):
+    i += 1
+resultDir = nameDir+str(i)
 if not os.path.exists(resultDir):
     os.makedirs(resultDir)
 f.writeParams(resultDir+'/params.txt')
