@@ -4,10 +4,10 @@ import os
 import MRS_func as f
 
 #####Input#####
-gammaTest1_consv = np.logspace(-24,-23,500)
-gammaTest2_consv = np.logspace(-24,-23,500)
-gammaTest3_consv = np.logspace(np.log10(2e-24),-23,800)
-gammaTest4_consv = np.logspace(np.log10(5e-24),-22,1800)
+gammaTest1_consv = np.logspace(np.log10(3e-24),-23,800)
+gammaTest2_consv = np.logspace(np.log10(3e-24),np.log10(1.5e-23),800)
+gammaTest3_consv = np.logspace(np.log10(5e-24),np.log10(2.5e-23),1200)
+gammaTest4_consv = np.logspace(np.log10(1e-23),np.log10(1.2e-22),1800)
 gammaTest1_cont = np.append(0,np.logspace(np.log10(5e-27),np.log10(4e-24),120))
 gammaTest2_cont = np.append(0,np.logspace(np.log10(5e-27),np.log10(4e-24),120))
 gammaTest3_cont = np.append(0,np.logspace(np.log10(3e-27),-24),120)
