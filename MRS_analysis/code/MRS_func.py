@@ -8,6 +8,7 @@ import numpy as np
 import math
 import time
 import sys
+import random
 
 ##########Parameters##########
 J_to_GeV = 6.242  #1e9 
@@ -167,6 +168,7 @@ def chi2_conservative(obsWvl,obsFlux,obsError,gammaArr,spectrum):
 class continuumFitting:  #gammaArr has to be monotonically increasing
     
     def __init__(self,obsWvl,obsFlux,obsError,spectrum):
+        self.jobnum = random.randint(100,999)
         self.wvl = obsWvl
         self.flux = obsFlux
         self.error = obsError
@@ -174,7 +176,7 @@ class continuumFitting:  #gammaArr has to be monotonically increasing
         self.lenWvl = len(obsWvl)  #length of the input wavelength array
         self.wvl_bd = obsWvl[::step]  #wavelength array that corresponds to the testing masses
         self.test_len = len(self.wvl_bd)  #length of the testing wavelength array
-        print('No. of test masses: ', self.test_len)
+        print('('+str(self.jobnum)+'): No. of test masses: ', self.test_len)
     
     def fluxModel(self,wvl,gamma,spectrum_eff,beta):
         wvlSpline = np.linspace(wvl[0],wvl[-1],len(beta))
@@ -243,11 +245,10 @@ class continuumFitting:  #gammaArr has to be monotonically increasing
         return gammaBand, gammaBound, simFlux, simFit, simChi2
         
     def constraint_cont(self,gammaArr):
-        print('Continuum fitting starts...')
-        start = time.time()
-        chi2 = np.zeros((self.test_len,len(gammaArr)))  
-        gammaBd = np.zeros(self.test_len)
-        gammaBand = np.zeros((self.test_len,2,2))
+        print('Job ('+str(self.jobnum)+') starts...')
+        self.chi2 = np.zeros((self.test_len,len(gammaArr)))  
+        self.gammaBd = np.zeros(self.test_len)
+        self.gammaBand = np.zeros((self.test_len,2,2))
         self.modelFit = np.zeros((self.test_len,testRange*2,3))
         self.beta = np.zeros((self.test_len,len(gammaArr),5))
         self.mask = np.zeros((self.test_len,testRange*2))
@@ -262,18 +263,15 @@ class continuumFitting:  #gammaArr has to be monotonically increasing
                 stimeEstim = time.time()
             #lmd0 = self.wvl_bd[i]
             wvlCut, fluxCut, errorCut, specCut = model_range(step*i,self.wvl,self.flux,self.error,self.spec)
-            chi2[i,:], gammaBd[i], self.modelFit[i,:,:], self.beta[i,:,:], self.mask[i,:] = self.contFitting(gammaArr, specCut, wvlCut, fluxCut, errorCut)
-            gammaBand[i,:], self.simGammaBd[i,:], self.simData[i,:,:], self.simFit[i,:,:,:], self.simChi2[i,:,:] = self.sensitivityBand(wvlCut,errorCut,self.modelFit[i,:,0],gammaArr,specCut)
+            self.chi2[i,:], self.gammaBd[i], self.modelFit[i,:,:], self.beta[i,:,:], self.mask[i,:] = self.contFitting(gammaArr, specCut, wvlCut, fluxCut, errorCut)
+            self.gammaBand[i,:], self.simGammaBd[i,:], self.simData[i,:,:], self.simFit[i,:,:,:], self.simChi2[i,:,:] = self.sensitivityBand(wvlCut,errorCut,self.modelFit[i,:,0],gammaArr,specCut)
             if (i==0):
                 etimeEstim = time.time()
-                print('Estimated computational time:', (etimeEstim-stimeEstim)*self.test_len/3600, ' [hrs]')
+                print('('+str(self.jobnum)+')\'s estimated computational time:', (etimeEstim-stimeEstim)*self.test_len/3600, ' [hrs]')
                 sys.stdout.flush()
-        N = detection_signif(chi2)
+        self.N = detection_signif(self.chi2)
         ###############################
-
-        end = time.time()
-        print('Duration: ', (end - start)/3600, ' [hrs]')
-        return chi2, gammaBd, gammaBand, N 
+        return self.chi2, self.gammaBd, self.gammaBand, self.N 
 
     # def bestFit(self,lmd0,gammaArr,chi2,wvl,flux,error):
     #     gamma_bf,like_bf = minimization(gammaArr,chi2,BOUND=(0,gammaArr[np.argmin(chi2)+5]))

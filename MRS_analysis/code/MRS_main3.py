@@ -4,17 +4,17 @@ import os
 import MRS_func as f
 
 #####Input#####
-gammaTest1_consv = np.logspace(np.log10(3e-24),-23,800)
-gammaTest2_consv = np.logspace(np.log10(3e-24),np.log10(1.5e-23),800)
-gammaTest3_consv = np.logspace(np.log10(5e-24),np.log10(2.5e-23),1200)
-gammaTest4_consv = np.logspace(np.log10(1e-23),np.log10(1.2e-22),1800)
+gammaTest1_consv = np.logspace(-24,-23,500)
+gammaTest2_consv = np.logspace(-24,-23,500)
+gammaTest3_consv = np.logspace(np.log10(2e-24),-23,800)
+gammaTest4_consv = np.logspace(np.log10(5e-24),-22,1800)
 gammaTest1_cont = np.append(0,np.logspace(np.log10(5e-27),np.log10(4e-24),120))
 gammaTest2_cont = np.append(0,np.logspace(np.log10(5e-27),np.log10(4e-24),120))
 gammaTest3_cont = np.append(0,np.logspace(np.log10(3e-27),-24),120)
 gammaTest4_cont = np.append(0,np.logspace(-26,-23,120))
 
 #####Data#####
-dataDir = '../analysis_data/result_5(5specTest)'
+dataDir = '../analysis_data/result_3(1spec)'
 stkData = np.load(dataDir+'/stkData.npz')
 metaData = np.load(dataDir+'/metaData.npz')
 wvl_ch1, flux_ch1, err_ch1 = stkData['ch1']
@@ -28,6 +28,30 @@ exptArr_ch1 = exptArr[:,0]
 exptArr_ch2 = exptArr[:,1]
 exptArr_ch3 = exptArr[:,2]
 exptArr_ch4 = exptArr[:,3]
+
+#####Truncation#####
+wvlM1 = 5.0
+wvlM2 = 28.0
+p1_ch1 = f.locate(wvl_ch1,wvlM1)
+p2_ch1 = len(wvl_ch1)
+p1_ch2 = 0
+p2_ch2 = len(wvl_ch2)
+p1_ch3 = 0
+p2_ch3 = len(wvl_ch3)
+p1_ch4 = 0
+p2_ch4 = f.locate(wvl_ch4,wvlM2)
+wvl_ch1_t = wvl_ch1[p1_ch1:p2_ch1]
+wvl_ch2_t = wvl_ch2[p1_ch2:p2_ch2]
+wvl_ch3_t = wvl_ch3[p1_ch3:p2_ch3]
+wvl_ch4_t = wvl_ch4[p1_ch4:p2_ch4]
+flux_ch1_t = flux_ch1[p1_ch1:p2_ch1]
+flux_ch2_t = flux_ch2[p1_ch2:p2_ch2]
+flux_ch3_t = flux_ch3[p1_ch3:p2_ch3]
+flux_ch4_t = flux_ch4[p1_ch4:p2_ch4]
+err_ch1_t = err_ch1[p1_ch1:p2_ch1]
+err_ch2_t = err_ch2[p1_ch2:p2_ch2]
+err_ch3_t = err_ch3[p1_ch3:p2_ch3]
+err_ch4_t = err_ch4[p1_ch4:p2_ch4]
 
 #####Initialization#####
 S_spec_ch1 = np.array([4.9,5.74,3320,3710])
@@ -53,10 +77,10 @@ spectrum3_eff = LM.effSpectrum(wvl_ch3,exptArr_ch3,d_lmd_ch3)
 spectrum4_eff = LM.effSpectrum(wvl_ch4,exptArr_ch4,d_lmd_ch4)
 
 #####ConservConstraint#####
-consvChi2_ch1, consvGammaBd_ch1, wvl_bd_ch1 = f.chi2_conservative(wvl_ch1,flux_ch1,err_ch1,gammaTest1_consv,spectrum1_eff)
-consvChi2_ch2, consvGammaBd_ch2, wvl_bd_ch2 = f.chi2_conservative(wvl_ch2,flux_ch2,err_ch2,gammaTest2_consv,spectrum2_eff)
-consvChi2_ch3, consvGammaBd_ch3, wvl_bd_ch3 = f.chi2_conservative(wvl_ch3,flux_ch3,err_ch3,gammaTest3_consv,spectrum3_eff)
-consvChi2_ch4, consvGammaBd_ch4, wvl_bd_ch4 = f.chi2_conservative(wvl_ch4,flux_ch4,err_ch4,gammaTest4_consv,spectrum4_eff)
+consvChi2_ch1, consvGammaBd_ch1, wvl_bd_ch1 = f.chi2_conservative(wvl_ch1_t,flux_ch1_t,err_ch1_t,gammaTest1_consv,spectrum1_eff)
+consvChi2_ch2, consvGammaBd_ch2, wvl_bd_ch2 = f.chi2_conservative(wvl_ch2_t,flux_ch2_t,err_ch2_t,gammaTest2_consv,spectrum2_eff)
+consvChi2_ch3, consvGammaBd_ch3, wvl_bd_ch3 = f.chi2_conservative(wvl_ch3_t,flux_ch3_t,err_ch3_t,gammaTest3_consv,spectrum3_eff)
+consvChi2_ch4, consvGammaBd_ch4, wvl_bd_ch4 = f.chi2_conservative(wvl_ch4_t,flux_ch4_t,err_ch4_t,gammaTest4_consv,spectrum4_eff)
 massArr_bd_ch1 = f.wvlToMass(wvl_bd_ch1)
 massArr_bd_ch2 = f.wvlToMass(wvl_bd_ch2)
 massArr_bd_ch3 = f.wvlToMass(wvl_bd_ch3)
@@ -71,13 +95,13 @@ consvResult_ch3 = np.array([wvl_bd_ch3,consvGammaBd_ch3,consvCouplingBd_ch3])
 consvResult_ch4 = np.array([wvl_bd_ch4,consvGammaBd_ch4,consvCouplingBd_ch4])
 
 #####ContinConstraint#####
-fc1 = f.continuumFitting(wvl_ch1,flux_ch1,err_ch1,spectrum1_eff)
+fc1 = f.continuumFitting(wvl_ch1_t,flux_ch1_t,err_ch1_t,spectrum1_eff)
 contChi2_ch1, contGammaBd_ch1, gammaBand_ch1, detectSig_ch1 = fc1.constraint_cont(gammaTest1_cont)
-fc2 = f.continuumFitting(wvl_ch2,flux_ch2,err_ch2,spectrum2_eff)
+fc2 = f.continuumFitting(wvl_ch2_t,flux_ch2_t,err_ch2_t,spectrum2_eff)
 contChi2_ch2, contGammaBd_ch2, gammaBand_ch2, detectSig_ch2 = fc2.constraint_cont(gammaTest2_cont)
-fc3 = f.continuumFitting(wvl_ch3,flux_ch3,err_ch3,spectrum3_eff)
+fc3 = f.continuumFitting(wvl_ch3_t,flux_ch3_t,err_ch3_t,spectrum3_eff)
 contChi2_ch3, contGammaBd_ch3, gammaBand_ch3, detectSig_ch3 = fc3.constraint_cont(gammaTest3_cont)
-fc4 = f.continuumFitting(wvl_ch4,flux_ch4,err_ch4,spectrum4_eff)
+fc4 = f.continuumFitting(wvl_ch4_t,flux_ch4_t,err_ch4_t,spectrum4_eff)
 contChi2_ch4, contGammaBd_ch4, gammaBand_ch4, detectSig_ch4 = fc4.constraint_cont(gammaTest4_cont)
 contCouplingBd_ch1 = f.gammaToCoupling(contGammaBd_ch1,massArr_bd_ch1)
 contCouplingBd_ch2 = f.gammaToCoupling(contGammaBd_ch2,massArr_bd_ch2)
@@ -89,11 +113,7 @@ contResult_ch3 = np.array([fc3.wvl_bd,contGammaBd_ch3,contCouplingBd_ch3, detect
 contResult_ch4 = np.array([fc4.wvl_bd,contGammaBd_ch4,contCouplingBd_ch4, detectSig_ch4])
 
 #####SaveResults#####
-nameDir = dataDir+'/result'
-i = 1
-while os.path.isdir(nameDir+str(i)):
-    i += 1
-resultDir = nameDir+str(i)
+resultDir = dataDir+'/result'
 if not os.path.exists(resultDir):
     os.makedirs(resultDir)
 f.writeParams(resultDir+'/params.txt')
@@ -108,4 +128,3 @@ np.savez(resultDir+'/gammaBand.npz',ch1=gammaBand_ch1,ch2=gammaBand_ch2,ch3=gamm
 np.savez(resultDir+'/simData.npz',ch1=fc1.simData,ch2=fc2.simData,ch3=fc3.simData,ch4=fc4.simData)
 np.savez(resultDir+'/simFit.npz',ch1=fc1.simFit,ch2=fc2.simFit,ch3=fc3.simFit,ch4=fc4.simFit)
 np.savez(resultDir+'/simChi2.npz',ch1=fc1.simChi2,ch2=fc2.simChi2,ch3=fc3.simChi2,ch4=fc4.simChi2)
-np.savez(resultDir+'/simGammaBd.npz',ch1=fc1.simGammaBd,ch2=fc2.simGammaBd,ch3=fc3.simGammaBd,ch4=fc4.simGammaBd)
