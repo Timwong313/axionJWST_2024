@@ -2,6 +2,7 @@
 import numpy as np
 import os
 import MRS_func as f
+import multiprocessing as mp
 
 #####Input#####
 gammaTest1_consv = np.logspace(np.log10(3e-24),-23,800)
@@ -72,12 +73,12 @@ consvResult_ch4 = np.array([wvl_bd_ch4,consvGammaBd_ch4,consvCouplingBd_ch4])
 
 #####ContinConstraint#####
 fc1 = f.continuumFitting(wvl_ch1,flux_ch1,err_ch1,spectrum1_eff)
-contChi2_ch1, contGammaBd_ch1, gammaBand_ch1, detectSig_ch1 = fc1.constraint_cont(gammaTest1_cont)
 fc2 = f.continuumFitting(wvl_ch2,flux_ch2,err_ch2,spectrum2_eff)
-contChi2_ch2, contGammaBd_ch2, gammaBand_ch2, detectSig_ch2 = fc2.constraint_cont(gammaTest2_cont)
 fc3 = f.continuumFitting(wvl_ch3,flux_ch3,err_ch3,spectrum3_eff)
-contChi2_ch3, contGammaBd_ch3, gammaBand_ch3, detectSig_ch3 = fc3.constraint_cont(gammaTest3_cont)
 fc4 = f.continuumFitting(wvl_ch4,flux_ch4,err_ch4,spectrum4_eff)
+contChi2_ch1, contGammaBd_ch1, gammaBand_ch1, detectSig_ch1 = fc1.constraint_cont(gammaTest1_cont)
+contChi2_ch2, contGammaBd_ch2, gammaBand_ch2, detectSig_ch2 = fc2.constraint_cont(gammaTest2_cont)
+contChi2_ch3, contGammaBd_ch3, gammaBand_ch3, detectSig_ch3 = fc3.constraint_cont(gammaTest3_cont)
 contChi2_ch4, contGammaBd_ch4, gammaBand_ch4, detectSig_ch4 = fc4.constraint_cont(gammaTest4_cont)
 contCouplingBd_ch1 = f.gammaToCoupling(contGammaBd_ch1,massArr_bd_ch1)
 contCouplingBd_ch2 = f.gammaToCoupling(contGammaBd_ch2,massArr_bd_ch2)

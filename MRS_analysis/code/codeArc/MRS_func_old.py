@@ -22,9 +22,9 @@ sigma_v = 160000/constants.c #m/s/c
 solarV = 250000 #m/s
 testRange = 150  # Radius of the modelling range (~75FWHM of the DM line)
 anchorNo = 5  #No. of anchor points in cubic spline
-step = 1000  #3  #scanning the mass range in the given step (~FWHM of DM line)
+step = 100  #3  #scanning the mass range in the given step (~FWHM of DM line)
 maskRange = 1   #radius of the mask (in index)
-dataNo = 1  #No. of simulated data sets
+dataNo = 100  #No. of simulated data sets
 
 ##########General##########
 def locate(arr,x): 
@@ -216,7 +216,7 @@ def sensitivityBand(wvl,error,flux_model,gammaArr,spectrum_eff):
     gammaBand = np.array([band68,band95])
     return gammaBand, gammaBound, simFlux, simFit, simChi2
 
-def fit_sim(gammaArr, wvl, flux, error, spec) :
+def fit_sim(gammaArr,wvl, flux, error, spec) :
     chi2, gammaBd, modelFit, beta, mask = contFitting(gammaArr, spec, wvl, flux, error)
     result = (chi2,gammaBd,modelFit,beta,mask) + sensitivityBand(wvl,error,modelFit[:,0],gammaArr,spec)
     return result
@@ -225,11 +225,9 @@ def detection_signif(chi2):
     N = np.sqrt(chi2[:,0]-np.min(chi2,axis=1))
     return N
 
-class continuumFitting(mp.Process):  
+class continuumFitting:  
     #gammaArr has to be monotonically increasing
-    def __init__(self,queue,gammaArr,obsWvl,obsFlux,obsError,spectrum):
-        mp.Process.__init__(self)
-        self.queue = queue
+    def __init__(self,gammaArr,obsWvl,obsFlux,obsError,spectrum):
         self.gamma = gammaArr
         self.wvl = obsWvl
         self.flux = obsFlux
@@ -241,24 +239,38 @@ class continuumFitting(mp.Process):
         self.test_len = len(self.wvl_bd)  #length of the testing wavelength array
         self.jobnum = random.randint(100,999)
         print('('+str(self.jobnum)+'): No. of test masses: ', self.test_len)
-            
-    def run(self):
         print('Job ('+str(self.jobnum)+') starts...')
-        #####First trail#####
+        #constraint_cont()
+    
+    def constraint_cont(self):
+        self.chi2 = np.zeros((self.test_len,self.gamma_len)) 
+        self.gammaBd = np.zeros(self.test_len)
+        self.gammaBand = np.zeros((self.test_len,2,2))
+        self.modelFit = np.zeros((self.test_len,testRange*2,3))
+        self.beta = np.zeros((self.test_len,self.gamma_len,5))
+        self.mask = np.zeros((self.test_len,testRange*2))
+        self.simData = np.zeros((self.test_len,dataNo,2*testRange))
+        self.simFit = np.zeros((self.test_len,dataNo,2*testRange,3))
+        self.simChi2 = np.zeros((self.test_len,dataNo,self.gamma_len))
+        self.simGammaBd = np.zeros((self.test_len,dataNo))
+
+        #########Computation##########
         stime = time.time()
         wvlCut, fluxCut, errorCut, specCut = model_range(0,self.wvl,self.flux,self.error,self.spec)
-        self.result = [fit_sim(self.gamma, wvlCut, fluxCut, errorCut, specCut)]
+        self.chi2[0,:], self.gammaBd[0], self.modelFit[0,:,:], self.beta[0,:,:], self.mask[0,:], self.gammaBand[0,:], self.simGammaBd[0,:], self.simData[0,:,:], self.simFit[0,:,:,:], self.simChi2[0,:,:] = fit_sim(self.gamma, wvlCut, fluxCut, errorCut, specCut)
         etime =  time.time()
         print('('+str(self.jobnum)+')\'s estimated computational time:', (etime-stime)*self.test_len/7200, ' [hrs]')
         sys.stdout.flush()
-
-        #####Main calculation#####
         fitArgs = [(self.gamma,)+model_range(step*i,self.wvl,self.flux,self.error,self.spec) for i in range(1,self.test_len)]
         pool = mp.Pool()
-        self.result += pool.starmap(fit_sim,fitArgs)
+        result = pool.starmap(fit_sim,fitArgs)
         pool.close()
         pool.join()
-        self.queue.put(self.result,block=True)
+        for i in range(1,self.test_len):
+            self.chi2[i,:], self.gammaBd[i], self.modelFit[i,:,:], self.beta[i,:,:], self.mask[i,:], self.gammaBand[i,:], self.simGammaBd[i,:], self.simData[i,:,:], self.simFit[i,:,:,:], self.simChi2[i,:,:] = result[i-1]
+        self.N = detection_signif(self.chi2)
+        ###############################
+        #return self.chi2, self.gammaBd, self.gammaBand, self.N 
 
     #def mask(self, wvl, flux, error):
     #    i_unmask = maskRange + 1
@@ -287,29 +299,6 @@ class continuumFitting(mp.Process):
     #     minLike = optimize.minimize(likelihood,initial)
     #     minBeta = optimize.minimize(likelihood,initial).x
     #     return np.append(gamma_bf,minBeta), minLike.fun
-
-class fittingResult:
-
-    def __init__(self,result):
-        self.test_len = len(result)
-        self.gamma_len = np.size(result[0][0])
-        self.chi2 = np.zeros((self.test_len,self.gamma_len))
-        self.gammaBd = np.zeros(self.test_len)
-        self.gammaBand = np.zeros((self.test_len,2,2))
-        self.modelFit = np.zeros((self.test_len,testRange*2,3))
-        self.beta = np.zeros((self.test_len,self.gamma_len,5))
-        self.mask = np.zeros((self.test_len,testRange*2))
-        self.simData = np.zeros((self.test_len,dataNo,2*testRange))
-        self.simFit = np.zeros((self.test_len,dataNo,2*testRange,3))
-        self.simChi2 = np.zeros((self.test_len,dataNo,self.gamma_len))
-        self.simGammaBd = np.zeros((self.test_len,dataNo))
-        self.getResult(result)
-
-    def getResult(self, result):
-        for i in range(0,self.test_len):
-            self.chi2[i,:], self.gammaBd[i], self.modelFit[i,:,:], self.beta[i,:,:], self.mask[i,:], self.gammaBand[i,:], self.simGammaBd[i,:], self.simData[i,:,:], self.simFit[i,:,:,:], self.simChi2[i,:,:] = result[i]
-        self.N = detection_signif(self.chi2)
-
 
 ##########Results##########
 def writeParams(fileName):

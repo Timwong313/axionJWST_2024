@@ -3,7 +3,7 @@ import numpy as np
 import os
 import multiprocessing as mp 
 import time
-import MRS_func as f
+import MRS_func_v2 as f
 
 if __name__ == '__main__':
     #####Input#####
@@ -74,10 +74,7 @@ if __name__ == '__main__':
     consvResult_ch4 = np.array([wvl_bd_ch4,consvGammaBd_ch4,consvCouplingBd_ch4])
     
     #####ContinConstraint#####
-    queue1 = mp.Manager().Queue()
-    queue2 = mp.Manager().Queue()
-    queue3 = mp.Manager().Queue()
-    queue4 = mp.Manager().Queue()
+    queue1 = Queue()
     fc1 = f.continuumFitting(queue1,gammaTest1_cont,wvl_ch1,flux_ch1,err_ch1,spectrum1_eff)
     fc2 = f.continuumFitting(queue2,gammaTest2_cont,wvl_ch2,flux_ch2,err_ch2,spectrum2_eff)
     fc3 = f.continuumFitting(queue3,gammaTest3_cont,wvl_ch3,flux_ch3,err_ch3,spectrum3_eff)
@@ -91,21 +88,25 @@ if __name__ == '__main__':
     fc2.join()
     fc3.join()
     fc4.join()
-    print("Fitting done!")
-    r1 = f.fittingResult(queue1.get())
-    r2 = f.fittingResult(queue2.get())
-    r3 = f.fittingResult(queue3.get())
-    r4 = f.fittingResult(queue4.get())
     te = time.time()
+    for i in range(0,test_len1):
+        contChi2_ch1[i,:], consvGammaBd_ch1[i], modelFit_ch1[i,:,:],_,_, gammaBand_ch1[i,:], simGammaBd_ch1[i,:], simData_ch1[i,:,:], simFit_ch1[i,:,:,:], simChi2_ch1[i,:,:] = queue1.get()[i]
+    for i in range(0,test_len2):
+        contChi2_ch1[i,:], consvGammaBd_ch1[i], modelFit_ch1[i,:,:],_,_, gammaBand_ch1[i,:], simGammaBd_ch1[i,:], simData_ch1[i,:,:], simFit_ch1[i,:,:,:], simChi2_ch1[i,:,:] = queue1.get()[i]
+    for i in range(0,test_len3):
+        contChi2_ch1[i,:], consvGammaBd_ch1[i], modelFit_ch1[i,:,:],_,_, gammaBand_ch1[i,:], simGammaBd_ch1[i,:], simData_ch1[i,:,:], simFit_ch1[i,:,:,:], simChi2_ch1[i,:,:] = queue1.get()[i]
+    for i in range(0,test_len4):
+        contChi2_ch1[i,:], consvGammaBd_ch1[i], modelFit_ch1[i,:,:],_,_, gammaBand_ch1[i,:], simGammaBd_ch1[i,:], simData_ch1[i,:,:], simFit_ch1[i,:,:,:], simChi2_ch1[i,:,:] = queue1.get()[i]
+
     print('Duration:', (te-ts)/3600, '[hrs]')
-    contCouplingBd_ch1 = f.gammaToCoupling(r1.gammaBd,massArr_bd_ch1)
-    contCouplingBd_ch2 = f.gammaToCoupling(r2.gammaBd,massArr_bd_ch2)
-    contCouplingBd_ch3 = f.gammaToCoupling(r3.gammaBd,massArr_bd_ch3)
-    contCouplingBd_ch4 = f.gammaToCoupling(r4.gammaBd,massArr_bd_ch4)
-    contResult_ch1 = np.array([fc1.wvl_bd,r1.gammaBd,contCouplingBd_ch1,r1.N])
-    contResult_ch2 = np.array([fc2.wvl_bd,r2.gammaBd,contCouplingBd_ch2,r2.N])
-    contResult_ch3 = np.array([fc3.wvl_bd,r3.gammaBd,contCouplingBd_ch3,r3.N])
-    contResult_ch4 = np.array([fc4.wvl_bd,r4.gammaBd,contCouplingBd_ch4,r4.N])
+    contCouplingBd_ch1 = f.gammaToCoupling(fc1.gammaBd,massArr_bd_ch1)
+    contCouplingBd_ch2 = f.gammaToCoupling(fc2.gammaBd,massArr_bd_ch2)
+    contCouplingBd_ch3 = f.gammaToCoupling(fc3.gammaBd,massArr_bd_ch3)
+    contCouplingBd_ch4 = f.gammaToCoupling(fc4.gammaBd,massArr_bd_ch4)
+    contResult_ch1 = np.array([fc1.wvl_bd,fc1.gammaBd,contCouplingBd_ch1,fc1.N])
+    contResult_ch2 = np.array([fc2.wvl_bd,fc2.gammaBd,contCouplingBd_ch2,fc2.N])
+    contResult_ch3 = np.array([fc3.wvl_bd,fc3.gammaBd,contCouplingBd_ch3,fc3.N])
+    contResult_ch4 = np.array([fc4.wvl_bd,fc4.gammaBd,contCouplingBd_ch4,fc4.N])
     
     #####SaveResults#####
     nameDir = dataDir+'/result'
@@ -120,11 +121,11 @@ if __name__ == '__main__':
     np.savez(resultDir+'/contResult.npz',ch1=contResult_ch1,ch2=contResult_ch2,ch3=contResult_ch3,ch4=contResult_ch4)
     np.savez(resultDir+'/consvChi2.npz',ch1=consvChi2_ch1,ch2=consvChi2_ch2,ch3=consvChi2_ch3,ch4=consvChi2_ch4)
     np.savez(resultDir+'/gammaTest_consv.npz',ch1=gammaTest1_consv,ch2=gammaTest2_consv,ch3=gammaTest3_consv,ch4=gammaTest4_consv)
-    np.savez(resultDir+'/contChi2.npz',ch1=r1.chi2,ch2=r2.chi2,ch3=r3.chi2,ch4=r4.chi2)
+    np.savez(resultDir+'/contChi2.npz',ch1=fc1.chi2,ch2=fc2.chi2,ch3=fc3.chi2,ch4=fc4.chi2)
     np.savez(resultDir+'/gammaTest_cont.npz',ch1=gammaTest1_cont,ch2=gammaTest2_cont,ch3=gammaTest3_cont,ch4=gammaTest4_cont)
-    np.savez(resultDir+'/modelFit.npz',ch1=r1.modelFit,ch2=r2.modelFit,ch3=r3.modelFit,ch4=r4.modelFit)
-    np.savez(resultDir+'/gammaBand.npz',ch1=r1.gammaBand,ch2=r2.gammaBand,ch3=r3.gammaBand,ch4=r4.gammaBand)
-    np.savez(resultDir+'/simData.npz',ch1=r1.simData,ch2=r2.simData,ch3=r3.simData,ch4=r4.simData)
-    np.savez(resultDir+'/simFit.npz',ch1=r1.simFit,ch2=r2.simFit,ch3=r3.simFit,ch4=r4.simFit)
-    np.savez(resultDir+'/simChi2.npz',ch1=r1.simChi2,ch2=r2.simChi2,ch3=r3.simChi2,ch4=r4.simChi2)
-    np.savez(resultDir+'/simGammaBd.npz',ch1=r1.simGammaBd,ch2=r2.simGammaBd,ch3=r3.simGammaBd,ch4=r4.simGammaBd)
+    np.savez(resultDir+'/modelFit.npz',ch1=fc1.modelFit,ch2=fc2.modelFit,ch3=fc3.modelFit,ch4=fc4.modelFit)
+    np.savez(resultDir+'/gammaBand.npz',ch1=fc1.gammaBand,ch2=fc2.gammaBand,ch3=fc3.gammaBand,ch4=fc4.gammaBand)
+    np.savez(resultDir+'/simData.npz',ch1=fc1.simData,ch2=fc2.simData,ch3=fc3.simData,ch4=fc4.simData)
+    np.savez(resultDir+'/simFit.npz',ch1=fc1.simFit,ch2=fc2.simFit,ch3=fc3.simFit,ch4=fc4.simFit)
+    np.savez(resultDir+'/simChi2.npz',ch1=fc1.simChi2,ch2=fc2.simChi2,ch3=fc3.simChi2,ch4=fc4.simChi2)
+    np.savez(resultDir+'/simGammaBd.npz',ch1=fc1.simGammaBd,ch2=fc2.simGammaBd,ch3=fc3.simGammaBd,ch4=fc4.simGammaBd)
