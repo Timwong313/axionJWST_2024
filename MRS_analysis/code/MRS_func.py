@@ -11,6 +11,7 @@ import sys
 import random
 import multiprocessing as mp
 from multiprocessing.dummy import Pool as ThreadPool
+import os
 
 ##########Parameters##########
 J_to_GeV = 6.242  #1e9 
@@ -177,6 +178,7 @@ def lnlike_continuum(gamma,spectrum_eff,beta,wvl,flux,error,mask=None):
         return np.sum(((flux_model-flux)/error)**2,where=(mask==False)) 
 
 def contFitting(gammaArr, spectrum_eff, wvl, flux, error):
+    #ts = time.time()
     chi2 = np.zeros(len(gammaArr))
     minBeta = np.zeros((len(gammaArr),anchorNo))
     initial = np.linspace(flux[0],flux[-1],anchorNo)
@@ -193,6 +195,8 @@ def contFitting(gammaArr, spectrum_eff, wvl, flux, error):
     likelihood = lambda beta : lnlike_continuum(gammaBd, spectrum_eff, beta, wvl, flux, error, mask=maskCondition)
     minLike = optimize.minimize(likelihood,initial)
     modelFit = np.transpose(np.array([fluxModel(wvl,gammaArr[min_i],spectrum_eff,minBeta[min_i,:]),fluxModel(wvl,gammaBd,spectrum_eff,minLike.x),fluxModel(wvl,0,spectrum_eff,minBeta[0,:])]))
+    #te = time.time()
+    #print(te-ts)
     return chi2, gammaBd, modelFit, minBeta, maskCondition
 
 def simulateData(flux_model,error):
@@ -244,6 +248,7 @@ class continuumFitting(mp.Process):
             
     def run(self):
         print('Job ('+str(self.jobnum)+') starts...')
+
         #####First trail#####
         stime = time.time()
         wvlCut, fluxCut, errorCut, specCut = model_range(0,self.wvl,self.flux,self.error,self.spec)
@@ -254,7 +259,7 @@ class continuumFitting(mp.Process):
 
         #####Main calculation#####
         fitArgs = [(self.gamma,)+model_range(step*i,self.wvl,self.flux,self.error,self.spec) for i in range(1,self.test_len)]
-        pool = mp.Pool()
+        pool = mp.Pool(os.cpu_count()/4)
         self.result += pool.starmap(fit_sim,fitArgs)
         pool.close()
         pool.join()
