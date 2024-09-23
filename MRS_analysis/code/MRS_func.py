@@ -23,7 +23,7 @@ sigma_v = 160000/constants.c #m/s/c
 solarV = 250000 #m/s
 testRange = 150  # Radius of the modelling range (~75FWHM of the DM line)
 anchorNo = 5  #No. of anchor points in cubic spline
-step = 1000  #3  #scanning the mass range in the given step (~FWHM of DM line)
+step = 200  #3  #scanning the mass range in the given step (~FWHM of DM line)
 maskRange = 1   #radius of the mask (in index)
 dataNo = 1  #No. of simulated data sets
 
@@ -231,19 +231,20 @@ def detection_signif(chi2):
 
 class continuumFitting(mp.Process):  
     #gammaArr has to be monotonically increasing
-    def __init__(self,queue,gammaArr,obsWvl,obsFlux,obsError,spectrum):
+    def __init__(self,queue,gammaArr,wvl,flux,error,spectrum):
         mp.Process.__init__(self)
         self.queue = queue
         self.gamma = gammaArr
-        self.wvl = obsWvl
-        self.flux = obsFlux
-        self.error = obsError
+        self.wvl = wvl
+        self.flux = flux
+        self.error = error
         self.spec = spectrum  
         self.gamma_len = len(self.gamma)
-        self.lenWvl = len(obsWvl)  #length of the input wavelength array
-        self.wvl_bd = obsWvl[::step]  #wavelength array that corresponds to the testing masses
+        self.lenWvl = len(wvl)  #length of the input wavelength array
+        self.wvl_bd = wvl[::step]  #wavelength array that corresponds to the testing masses
         self.test_len = len(self.wvl_bd)  #length of the testing wavelength array
         self.jobnum = random.randint(100,999)
+        self.workno = int(os.cpu_count()/4)
         print('('+str(self.jobnum)+'): No. of test masses: ', self.test_len)
             
     def run(self):
@@ -259,7 +260,7 @@ class continuumFitting(mp.Process):
 
         #####Main calculation#####
         fitArgs = [(self.gamma,)+model_range(step*i,self.wvl,self.flux,self.error,self.spec) for i in range(1,self.test_len)]
-        pool = mp.Pool(os.cpu_count()/4)
+        pool = mp.Pool(self.workno)
         self.result += pool.starmap(fit_sim,fitArgs)
         pool.close()
         pool.join()
