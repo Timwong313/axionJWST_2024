@@ -10,7 +10,6 @@ import time
 import sys
 import random
 import multiprocessing as mp
-from multiprocessing.dummy import Pool as ThreadPool
 import os
 
 ##########Parameters##########
@@ -25,7 +24,7 @@ testRange = 150  # Radius of the modelling range (~75FWHM of the DM line)
 anchorNo = 5  #No. of anchor points in cubic spline
 step = 200  #3  #scanning the mass range in the given step (~FWHM of DM line)
 maskRange = 1   #radius of the mask (in index)
-dataNo = 1  #No. of simulated data sets
+dataNo = 10  #No. of simulated data sets
 
 ##########General##########
 def locate(arr,x): 
@@ -178,7 +177,6 @@ def lnlike_continuum(gamma,spectrum_eff,beta,wvl,flux,error,mask=None):
         return np.sum(((flux_model-flux)/error)**2,where=(mask==False)) 
 
 def contFitting(gammaArr, spectrum_eff, wvl, flux, error):
-    #ts = time.time()
     chi2 = np.zeros(len(gammaArr))
     minBeta = np.zeros((len(gammaArr),anchorNo))
     initial = np.linspace(flux[0],flux[-1],anchorNo)
@@ -195,8 +193,6 @@ def contFitting(gammaArr, spectrum_eff, wvl, flux, error):
     likelihood = lambda beta : lnlike_continuum(gammaBd, spectrum_eff, beta, wvl, flux, error, mask=maskCondition)
     minLike = optimize.minimize(likelihood,initial)
     modelFit = np.transpose(np.array([fluxModel(wvl,gammaArr[min_i],spectrum_eff,minBeta[min_i,:]),fluxModel(wvl,gammaBd,spectrum_eff,minLike.x),fluxModel(wvl,0,spectrum_eff,minBeta[0,:])]))
-    #te = time.time()
-    #print(te-ts)
     return chi2, gammaBd, modelFit, minBeta, maskCondition
 
 def simulateData(flux_model,error):
@@ -209,11 +205,14 @@ def sensitivityBand(wvl,error,flux_model,gammaArr,spectrum_eff):
     simFit = np.zeros((dataNo,testRange*2,3))
     simBeta = np.zeros((dataNo,len(gammaArr),anchorNo))
     gammaBound = np.zeros(dataNo)
-    #senArgs = [(gammaArr,spectrum_eff,wvl,simFlux[i,:],error) for i in range(dataNo)]
-    #tpool = ThreadPool()
-    #result = tpool.starmap(contFitting,senArgs)
+    arg1 = [gammaArr]*dataNo
+    arg2 = [spectrum_eff]*dataNo
+    arg3 = [wvl]*dataNo
+    arg4 = [simFlux[i,:] for i in range(dataNo)]
+    arg5 = [error]*dataNo 
+    result = list(map(contFitting,arg1,arg2,arg3,arg4,arg5))
     for i in range(dataNo):
-        simChi2[i,:], gammaBound[i], simFit[i,:,:],_,_ = contFitting(gammaArr,spectrum_eff,wvl,simFlux[i,:],error) #result[i]
+        simChi2[i,:], gammaBound[i], simFit[i,:,:],_,_ = result[i]  #contFitting(gammaArr,spectrum_eff,wvl,simFlux[i,:],error) 
     #gammaBand = np.array([np.mean(gammaBound),np.std(gammaBound)])
     band68 = np.array([np.percentile(gammaBound,84),np.percentile(gammaBound,16)])
     band95 = np.array([np.percentile(gammaBound,97.5),np.percentile(gammaBound,2.5)])
