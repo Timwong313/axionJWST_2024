@@ -3,7 +3,7 @@ import numpy as np
 import os
 import multiprocessing as mp 
 import time
-import MRS_func as f
+import MRS_func_nopool as f
 
 if __name__ == '__main__':
     #####Input#####
