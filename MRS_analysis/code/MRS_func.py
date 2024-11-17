@@ -24,7 +24,7 @@ testRange = 150  # Radius of the modelling range (~75FWHM of the DM line)
 anchorNo = 5  #No. of anchor points in cubic spline
 step = 200  #3  #scanning the mass range in the given step (~FWHM of DM line)
 maskRange = 1   #radius of the mask (in index)
-dataNo = 10  #No. of simulated data sets
+dataNo = 1  #No. of simulated data sets
 
 ##########General##########
 def locate(arr,x): 
@@ -260,7 +260,7 @@ class continuumFitting(mp.Process):
         #####Main calculation#####
         fitArgs = [(self.gamma,)+model_range(step*i,self.wvl,self.flux,self.error,self.spec) for i in range(1,self.test_len)]
         pool = mp.Pool(self.workno)
-        self.result += pool.starmap(fit_sim,fitArgs)
+        self.result += pool.starmap(fit_sim,fitArgs,chunksize=math.ceil(self.test_len/self.workno))
         pool.close()
         pool.join()
         self.queue.put(self.result,block=True)
