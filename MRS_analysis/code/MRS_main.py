@@ -7,14 +7,14 @@ import MRS_func as f
 
 if __name__ == '__main__':
     #####Input#####
-    gammaTest1_consv = np.logspace(np.log10(8e-23),-21,800)
-    gammaTest2_consv = np.logspace(np.log10(8e-23),np.log10(1.5e-21),800)
-    gammaTest3_consv = np.logspace(np.log10(8e-23),np.log10(2.5e-21),1200)
-    gammaTest4_consv = np.logspace(np.log10(8e-20),np.log10(1.2e-20),1800)
-    gammaTest1_cont = np.append(0,np.logspace(np.log10(5e-27),np.log10(4e-23),200))
-    gammaTest2_cont = np.append(0,np.logspace(np.log10(5e-27),np.log10(4e-23),200))
-    gammaTest3_cont = np.append(0,np.logspace(np.log10(3e-27),np.log10(3e-23),200))
-    gammaTest4_cont = np.append(0,np.logspace(-26,-22,200))
+    gammaTest1_consv = np.logspace(np.log10(3e-24),-22,800)
+    gammaTest2_consv = np.logspace(np.log10(3e-24),np.log10(2e-22),800)
+    gammaTest3_consv = np.logspace(np.log10(3e-24),np.log10(2e-22),1200)
+    gammaTest4_consv = np.logspace(np.log10(3e-22),np.log10(1e-21),1800)
+    gammaTest1_cont = np.append(0,np.logspace(np.log10(1e-27),np.log10(1e-23),200))
+    gammaTest2_cont = np.append(0,np.logspace(np.log10(1e-27),np.log10(1e-23),200))
+    gammaTest3_cont = np.append(0,np.logspace(np.log10(8e-28),np.log10(8e-23),200))
+    gammaTest4_cont = np.append(0,np.logspace(-27,np.log(8-23),200))
 
     #####Data#####
     dataDir = '../analysis_data/result_5(5specTest)'

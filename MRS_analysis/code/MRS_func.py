@@ -86,14 +86,14 @@ class line_model:
     def effSpectrum(self,wvl,exptArr,d_lmd):
         w = wvl*sigma_v  #um
         sigma_lmd = d_lmd/2/np.sqrt(2*np.log(2))  #um
-        newSigma2 = sigma_lmd*sigma_lmd+w*w  #um^2 
+        newSigma2 = sigma_lmd*sigma_lmd+w*w  #um^2
         normalize = wvl*wvl/np.sqrt(2*math.pi*newSigma2)/constants.c
-        # print('###########################')
-        # print('w = ', w)
-        # print('sigma_lmd', sigma_lmd)
-        # print('sigma = ', np.sqrt(newSigma2))
+        print('###########################')
+        print('doppler width = ', np.mean(w))
+        print('sigma_lmd', sigma_lmd)
+        print('sigma = ', np.mean(np.sqrt(newSigma2)))
         # print('normalize = ', normalize)
-        # print('###########################')
+        print('###########################')
         
         spectrum_eff = np.zeros((len(wvl),len(wvl)))
         weight = exptArr/np.sum(exptArr)
