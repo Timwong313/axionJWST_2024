@@ -14,10 +14,10 @@ if __name__ == '__main__':
     gammaTest1_cont = np.append(0,np.logspace(np.log10(1e-27),np.log10(1e-23),200))
     gammaTest2_cont = np.append(0,np.logspace(np.log10(1e-27),np.log10(1e-23),200))
     gammaTest3_cont = np.append(0,np.logspace(np.log10(8e-28),np.log10(8e-23),200))
-    gammaTest4_cont = np.append(0,np.logspace(-27,np.log(8-23),200))
+    gammaTest4_cont = np.append(0,np.logspace(-27,np.log10(8e-23),200))
 
     #####Data#####
-    dataDir = '../analysis_data/result_5(5specTest)'
+    dataDir = '../analysis_data/testSysErr(60)/sys007'
     stkData = np.load(dataDir+'/stkData.npz')
     metaData = np.load(dataDir+'/metaData.npz')
     wvl_ch1, flux_ch1, err_ch1 = stkData['ch1']
@@ -128,3 +128,4 @@ if __name__ == '__main__':
     np.savez(resultDir+'/simFit.npz',ch1=r1.simFit,ch2=r2.simFit,ch3=r3.simFit,ch4=r4.simFit)
     np.savez(resultDir+'/simChi2.npz',ch1=r1.simChi2,ch2=r2.simChi2,ch3=r3.simChi2,ch4=r4.simChi2)
     np.savez(resultDir+'/simGammaBd.npz',ch1=r1.simGammaBd,ch2=r2.simGammaBd,ch3=r3.simGammaBd,ch4=r4.simGammaBd)
+    np.savez(resultDir+'/mask.npz',ch1=r1.mask,ch2=r2.mask,ch3=r3.mask,ch4=r4.mask)
