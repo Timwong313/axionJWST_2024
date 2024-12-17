@@ -176,11 +176,24 @@ def lnlike_continuum(gamma,spectrum_eff,beta,wvl,flux,error,mask=None):
         flux_model = fluxModel(wvl,gamma,spectrum_eff,beta)
         return np.sum(((flux_model-flux)/error)**2,where=(mask==False)) 
 
+def mask(wvl, flux, error, spec):
+    #Mask the interval=maskRange which has a >3sigma fluctuation
+    mask_condition = np.zeros(len(flux),dtype=bool)
+    initial = np.linspace(flux[0],flux[-1],anchorNo)
+    likelihood = lambda beta : lnlike_continuum(0,spec,beta,wvl,flux,error)
+    minLike = optimize.minimize(likelihood,initial)
+    nullModel = fluxModel(wvl,0,spec,minLike.x)
+    df = flux - nullModel
+    for i in range(maskRange,len(flux)-maskRange):
+        if np.all(abs(df)[i-maskRange:i+maskRange+1] > 3*error[i-maskRange:i+maskRange+1]):
+            mask_condition[i-maskRange:i+maskRange] = True
+    return mask_condition
+
 def contFitting(gammaArr, spectrum_eff, wvl, flux, error):
     chi2 = np.zeros(len(gammaArr))
     minBeta = np.zeros((len(gammaArr),anchorNo))
     initial = np.linspace(flux[0],flux[-1],anchorNo)
-    maskCondition = False #self.mask(lmd0,wvl,flux,error)
+    maskCondition = mask(wvl,flux,error,spectrum_eff)
 
     for i in range(len(gammaArr)):
         gamma = gammaArr[i]
@@ -264,26 +277,6 @@ class continuumFitting(mp.Process):
         pool.close()
         pool.join()
         self.queue.put(self.result,block=True)
-
-    #def mask(self, wvl, flux, error):
-    #    i_unmask = maskRange + 1
-    #    mask_condition = np.zeros(len(flux),dtype=bool)
-    #    initial = np.linspace(flux[0],flux[-1],anchorNo)
-    #    likelihood = lambda beta : self.lnlike_continuum(lmd0, 0, beta, wvl, flux, error)
-    #    minLike = optimize.minimize(likelihood,initial)
-    #    nullModel = self.fluxModel(lmd0,wvl,0,minLike.x)
-    #    df = flux - nullModel
-    #    for i in range(maskRange,len(flux)-maskRange):
-    #        if (abs(wvl[i]==lmd0)):
-    #            i_unmask = i
-    #        if (np.all((abs(df)[i-maskRange:i+maskRange+1] >= 3*error[i-maskRange:i+maskRange+1]):
-    #            mask_condition[i-maskRange:i+maskRange] = True
-    #    if (wvl[maskRange]>=lmd0):
-    #        i_unmask = maskRange + 1  
-    #    elif (wvl[len(flux)-maskRange-1]<=lmd0):
-    #        i_unmask = len(flux)-maskRange-2
-    #    mask_condition[i_unmask-maskRange-1:i_unmask+maskRange+2] = False  #unmask a range of 5 bins
-    #    return mask_condition
 
     # def bestFit(self,lmd0,gammaArr,chi2,wvl,flux,error):
     #     gamma_bf,like_bf = minimization(gammaArr,chi2,BOUND=(0,gammaArr[np.argmin(chi2)+5]))
