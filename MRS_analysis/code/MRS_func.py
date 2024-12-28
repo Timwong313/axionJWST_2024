@@ -22,11 +22,18 @@ sigma_v = 160000/constants.c #m/s/c
 solarV = 250000 #m/s
 testRange = 150  # Radius of the modelling range (~75FWHM of the DM line)
 anchorNo = 5  #No. of anchor points in cubic spline
-step = 200  #3  #scanning the mass range in the given step (~FWHM of DM line)
+step = 300  #3  #scanning the mass range in the given step (~FWHM of DM line)
 maskRange = 1   #radius of the mask (in index)
 dataNo = 1  #No. of simulated data sets
 
 ##########General##########
+def quadgrowth(start,end,N,w=0.9):
+    #0<w<1
+    stepArr = np.array(range(0,N))
+    d0 = (end-start)/(N-1)
+    dk = d0*(1-w*(N-stepArr-1)/(N-1))
+    return start+stepArr*dk
+
 def locate(arr,x): 
     #arr[i] just larger than x
     i = 0

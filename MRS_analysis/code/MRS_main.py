@@ -7,17 +7,21 @@ import MRS_func as f
 
 if __name__ == '__main__':
     #####Input#####
-    gammaTest1_consv = np.logspace(np.log10(3e-24),-22,800)
-    gammaTest2_consv = np.logspace(np.log10(3e-24),np.log10(2e-22),800)
-    gammaTest3_consv = np.logspace(np.log10(3e-24),np.log10(2e-22),1200)
-    gammaTest4_consv = np.logspace(np.log10(3e-22),np.log10(1e-21),1800)
-    gammaTest1_cont = np.append(0,np.logspace(np.log10(1e-27),np.log10(1e-23),200))
-    gammaTest2_cont = np.append(0,np.logspace(np.log10(1e-27),np.log10(1e-23),200))
-    gammaTest3_cont = np.append(0,np.logspace(np.log10(8e-28),np.log10(8e-23),200))
-    gammaTest4_cont = np.append(0,np.logspace(-27,np.log10(8e-23),200))
+    gammaTest1_consv = np.logspace(np.log10(5e-25),-23,500)
+    gammaTest2_consv = np.logspace(np.log10(5e-25),-23,500)
+    gammaTest3_consv = np.logspace(np.log10(5e-25),-23,500)
+    gammaTest4_consv = np.logspace(np.log10(3e-24),-23,1000)
+    #gammaTest1_cont = np.append(0,np.logspace(np.log10(1e-27),np.log10(1e-23),200))
+    #gammaTest2_cont = np.append(0,np.logspace(np.log10(1e-27),np.log10(1e-23),200))
+    #gammaTest3_cont = np.append(0,np.logspace(np.log10(8e-28),np.log10(8e-23),200))
+    #gammaTest4_cont = np.append(0,np.logspace(-27,np.log10(8e-23),200))
+    gammaTest1_cont = f.quadgrowth(0,1e-24,200)
+    gammaTest2_cont = f.quadgrowth(0,1e-24,200)
+    gammaTest3_cont = f.quadgrowth(0,5e-23,200)
+    gammaTest4_cont = f.quadgrowth(0,5e-23,200)
 
     #####Data#####
-    dataDir = '../analysis_data/testSysErr(60)/sys007'
+    dataDir = '../analysis_data/testSysErr(4)/sys025'
     stkData = np.load(dataDir+'/stkData.npz')
     metaData = np.load(dataDir+'/metaData.npz')
     wvl_ch1, flux_ch1, err_ch1 = stkData['ch1']

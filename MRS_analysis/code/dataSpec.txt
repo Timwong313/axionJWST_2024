@@ -1,0 +1,6 @@
+Title 	 TargetName 	 SourceType 	 BkgTarget 	 EffExp [s] 	 RA 	 DEC 	 ASN 	 DataProblem 	 FileName 
+A JWST Survey of Ultraluminous Infrared Galaxies	IRAS 22491-1808	EXTENDED	False	12183.856	342.94709780493184	-17.882356341101804	jw03368_20240614t135358_pool.csv	False	jw03368-c1012_t029_miri
+Investigating Protostellar Accretion Across the Mass Spectrum	HOPS 153	EXTENDED	False	13760.592	84.48757478081598	-7.115613351323207	jw01802_20240706t025209_pool.csv	False	jw01802-o017_t017_miri
+Resolving the Cooling Flow at the Center of the Phoenix Cluster	Phoenix Cluster BCG	EXTENDED	False	33254.772	356.1829171461232	-42.7200288158385	jw02439_20240708t235742_pool.csv	False	jw02439-o001_t001_miri
+Mapping inclined disk astrochemical signatures (MIDAS)	2MASS J04202144+2813491	EXTENDED	False	19780.847999999998	65.08932653220795	28.230344549584586	jw01751_20240705t072749_pool.csv	False	jw01751-o020_t008_miri
+!!!Mapping inclined disk astrochemical signatures (MIDAS)!!!	2MASS J04202144+2813491_sky	EXTENDED	True	9890.424	65.08002013474724	28.23718670859057	jw01751_20240705t072749_pool.csv	False	jw01751-o015_t009_miri
